@@ -1,0 +1,12 @@
+.sledheader_datter {
+    color: brown;
+    font-size: small;
+    font-weight: 600;
+    font-style: oblique;
+    padding: 1rem;
+    vertical-align: super;
+}
+
+.ml-5 {
+    margin-left: 5rem;
+}

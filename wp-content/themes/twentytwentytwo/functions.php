@@ -10,6 +10,9 @@
  */
 
 
+
+	
+
 if ( ! function_exists( 'twentytwentytwo_support' ) ) :
 
 	/**
@@ -62,6 +65,8 @@ if ( ! function_exists( 'twentytwentytwo_styles' ) ) :
 endif;
 
 add_action( 'wp_enqueue_scripts', 'twentytwentytwo_styles' );
+
+
 
 // Add block patterns
 require get_template_directory() . '/inc/block-patterns.php';
