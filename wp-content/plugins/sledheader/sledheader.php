@@ -40,14 +40,17 @@ class SledHeader {
 		add_action('init', [$this,'custom_post_type']);
 		add_filter( 'admin_init',  [$this, 'wp_update_php_annotation_custom']);
 		add_filter('the_title',  [$this, 'set_the_header']);
-		$this->enqueue_styles();
-	}
 
+	}
+ 
 	public static function activation() {
 		flush_rewrite_rules();
 		$requires_php = isset( $plugin_data['RequiresPHP'] ) ? $plugin_data['RequiresPHP'] : 7.4;
 		$compatible_php = is_php_version_compatible($requires_php);
 		$php_display_version = trim(stristr(phpversion(), '-', true));
+
+		$version = date("Ymd") . rand(0,99);
+		wp_enqueue_style( 'sledheader.css', plugin_dir_url( __FILE__ ) . 'assets/css/sledheader.css', array(), $version, 'all' );
 
 		if ($compatible_php != 'false') {
 			global $pagenow;
@@ -96,11 +99,14 @@ class SledHeader {
 
 	public function enqueue_styles() {
 		$version = date("Ymd") . rand(0,99);
-		wp_enqueue_style( 'sledheader.css', plugin_dir_url( __FILE__ ) . 'assets/css/sledheader.css', array(), $version, 'all' );
+		wp_enqueue_style( 'sledHeaderStyle', plugins_url('/assets/css/sledheader.css', __FILE__));
 	}
 
 	public function set_the_header($the_title) {
-		$html = '<span class="sledheader_datter">' . get_the_date() . '</span>';
+		$html = '';
+		if (is_front_page()) {
+			$html = '<span class="sledheader_datter">' . get_the_date() . '</span>';
+		}
 		return str_replace($the_title, $the_title . $html, $the_title);
 	}
 
@@ -110,8 +116,10 @@ class SledHeader {
 
 if(class_exists('SledHeader')) {
 	$sledHeader = new SledHeader('test');
+
 }
 
 register_activation_hook( __FILE__, array( $sledHeader, 'activation' ) );
 register_deactivation_hook( __FILE__, array( $sledHeader, 'deactivation' ) );
 register_uninstall_hook( __FILE__, array( $sledHeader, 'uninstall' ) );
+echo SledHeader::enqueue_styles();
