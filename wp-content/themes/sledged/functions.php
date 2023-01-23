@@ -25,6 +25,62 @@ function wp_corenavi() {
 	if ( $total > 1 ) echo '</nav>';
 }
 
+function sled_jquery_scripts() {
+	wp_enqueue_script( 'jquery' );
+	wp_register_script( 'filter', get_stylesheet_directory_uri() . '/filter.js', array( 'jquery' ), time(), true );
+	wp_enqueue_script( 'filter' );
+}
+
+add_action('wp_ajax_myfilter', 'sled_filter_function');
+
+function sled_filter_function(){
+	$args = array(
+		'orderby' => 'date',
+		'order'	=> $_POST['date']
+	);
+ 
+	if( isset( $_POST['categoryfilter'] ) )
+		$args['tax_query'] = array(
+			array(
+				'taxonomy' => 'category',
+				'field' => 'id',
+				'terms' => $_POST['categoryfilter']
+			)
+		);
+ 
+		// if post thumbnail is set
+		if( isset( $_POST['featured_image'] ) && $_POST['featured_image'] == 'on' )
+			$args['meta_query'][] = array(
+				'key' => '_thumbnail_id',
+				'compare' => 'EXISTS'
+			);
+	
+		$query = new WP_Query( $args );
+	
+		if( $query->have_posts() ) :
+			while( $query->have_posts() ): $query->the_post();
+			$category_post = get_the_category( $post->ID );
+			$catofpost = $category_post[0]->cat_name;
+			$date = get_the_date( $format, $post->ID );
+
+			echo '<div class="content_post">';
+			echo '<h3>' . $query->post->post_title . '</h3>';
+			echo '<p>posted on ' . $date . '</p>';
+			echo '<p>Category: ' . $catofpost . '</p>';
+			echo get_the_post_thumbnail();
+			echo '<p>Excerpt: ' . get_the_excerpt() . '</p>';
+			echo '<hr>';
+			echo '</div>';
+
+		endwhile;
+		wp_reset_postdata();
+	else :
+		echo 'No posts found';
+	endif;
+	
+	die();
+}
+
 if ( ! function_exists( 'sledged_support' ) ) :
 
 	/**
@@ -47,7 +103,7 @@ if ( ! function_exists( 'sledged_support' ) ) :
 
 endif;
 
-add_action( 'after_setup_theme', 'sledged_support' );
+
 
 if ( ! function_exists( 'sledged_styles' ) ) :
 
@@ -77,56 +133,7 @@ if ( ! function_exists( 'sledged_styles' ) ) :
 
 endif;
 
-add_action( 'wp_enqueue_scripts', 'sledged_styles' );
 
+add_action( 'wp_enqueue_style', 'sledged_styles' );
+add_action( 'after_setup_theme', 'sledged_support' );
 add_action( 'wp_enqueue_scripts', 'sled_jquery_scripts' );
-
-function sled_jquery_scripts() {
-
-	wp_enqueue_script( 'jquery' );
-
-	wp_register_script( 'filter', get_stylesheet_directory_uri() . '/filter.js', array( 'jquery' ), time(), true );
-	wp_enqueue_script( 'filter' );
-
-}
-
-wp_localize_script( 'truescript', 'true_obj', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
-
-add_action( 'wp_ajax_myfilter', 'true_filter_function' );
-add_action( 'wp_ajax_nopriv_myfilter', 'true_filter_function' );
-
-function true_filter_function(){
-
-	$args = array(
-		'orderby' => 'date',
-		'order'	=> $_POST[ 'date' ]
-	);
-
-	if( isset( $_POST[ 'categoryfilter' ] )) {
-		$args[ 'tax_query' ] = array(
-			array(
-				'category' => '',
-				'field' => 'id',
-				'terms' => $_POST[ 'categoryfilter' ]
-			)
-		);
-	}
-	if( isset( $_POST[ 'featured_image' ] ) && 'on' == $_POST[ 'featured_image' ] ) {
-		$args[ 'meta_query' ][] = array(
-			'key' => '_thumbnail_id',
-			'compare' => 'EXISTS'
-		);
-	}
-
-	query_posts( $args );
-
-	if ( have_posts() ) {
-		while ( have_posts() ) : the_post();
-			echo '<a href="' . get_permalink() . '">' . get_the_title() . '</a>';
-		endwhile;
-	} else {
-		echo 'Ничего не найдено';
-	}
-
-	die();
-}

@@ -39,11 +39,11 @@ class SledHeader {
 	public function __construct() {
 		add_action('init', [$this,'custom_post_type']);
 		add_filter( 'admin_init',  [$this, 'wp_update_php_annotation_custom']);
-		add_filter('the_title',  [$this, 'set_the_header']);
+		add_filter('the_title',  [$this, 'set_the_sled_header']);
 
 	}
  
-	public static function activation() {
+	public static function sledActivation() {
 		flush_rewrite_rules();
 		$requires_php = isset( $plugin_data['RequiresPHP'] ) ? $plugin_data['RequiresPHP'] : 7.4;
 		$compatible_php = is_php_version_compatible($requires_php);
@@ -63,11 +63,11 @@ class SledHeader {
 		}
 	}
 
-	public static function deactivation() {
+	public static function sledDeactivation() {
 		flush_rewrite_rules();
 	}
 
-	public static function uninstall() {
+	public static function sledUninstall() {
 		flush_rewrite_rules();
 	}
 
@@ -97,12 +97,12 @@ class SledHeader {
 		}
 	}
 
-	public function enqueue_styles() {
+	public function enqueue_sled_styles() {
 		$version = date("Ymd") . rand(0,99);
 		wp_enqueue_style( 'sledHeaderStyle', plugins_url('/assets/css/sledheader.css', __FILE__));
 	}
 
-	public function set_the_header($the_title) {
+	public function set_the_sled_header($the_title) {
 		$html = '';
 		if (is_front_page()) {
 			$html = '<span class="sledheader_datter">' . get_the_date() . '</span>';
@@ -115,11 +115,11 @@ class SledHeader {
 
 
 if(class_exists('SledHeader')) {
+
 	$sledHeader = new SledHeader('test');
-
+	
+	register_activation_hook( __FILE__, array( $sledHeader, 'sledActivation' ) );
+	register_deactivation_hook( __FILE__, array( $sledHeader, 'sledDeactivation' ) );
+	register_uninstall_hook( __FILE__, array( $sledHeader, 'sledUninstall' ) );
+	$sledHeader->enqueue_sled_styles();
 }
-
-register_activation_hook( __FILE__, array( $sledHeader, 'activation' ) );
-register_deactivation_hook( __FILE__, array( $sledHeader, 'deactivation' ) );
-register_uninstall_hook( __FILE__, array( $sledHeader, 'uninstall' ) );
-echo SledHeader::enqueue_styles();

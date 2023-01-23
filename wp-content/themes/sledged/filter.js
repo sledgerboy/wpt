@@ -1,19 +1,21 @@
-jQuery( function( $ ){
-    $( '#filter' ).submit(function(){
-        var filter = $(this);
-        $.ajax({
-            url : true_obj.ajaxurl,
-            data : filter.serialize(),
-            type : 'POST',
-            beforeSend : function( xhr ){
-                filter.find( 'button' ).text( 'please wait...' );
-            },
-            success : function( data ){
-                filter.find( 'button' ).text( 'apply' );
-                $( '#response' ).remove();
-                $( '#response' ).html(data);
-            }
+jQuery(function($){
+    $( document ).ready(function() {
+        $('#filter').change(function(e){
+            var filter = $('#filter');
+            e.preventDefault();
+            $('#response').html('');
+            $.ajax({
+                url:filter.attr('action'),
+                data:filter.serialize(),
+                type:filter.attr('method'),
+                beforeSend:function(xhr){
+                    filter.find('.infob').text('Please wait ...');
+                },
+                success:function(data){
+                    $('#response').html(data);
+                }
+            });
+            return false;
         });
-        return false;
     });
 });
